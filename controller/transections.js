@@ -169,7 +169,7 @@ export const deleteTransection = async (req, res) => {
     if (!transection) {
       res.status(401).json({ message: "No transection found" });
     } else {
-      res.status(200).json({ message: "transection deleted successfully!" });
+      res.status(200).json(transection);
     }
   } catch (error) {}
 };

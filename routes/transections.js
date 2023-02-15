@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.get("/", auth, getTransections);
 router.post("/", auth, createTransection);
-router.get("/singleTransection/:id", auth, getSingleTransSection);
+router.post("/singleTransection/:id", auth, getSingleTransSection);
 router.patch("/:id", auth, updateTransection);
 router.delete("/:id", auth, deleteTransection);
 
