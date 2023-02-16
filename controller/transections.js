@@ -1,5 +1,5 @@
 import TransectionModel from "../models/Transections.js";
-
+import moment from "moment";
 // get all transections
 export const getTransections = async (req, res) => {
   const transections = await TransectionModel.find().where({
@@ -157,6 +157,33 @@ export const updateTransection = async (req, res) => {
     }
   } catch (error) {
     res.status(404).json({ message: error.message });
+  }
+};
+
+export const checkStatement = async (req, res) => {
+  const { transaction_type, start_date, end_date } = req.body;
+  // let allTransactions = concat("deposit", "withdraw");
+
+  const from_date = new Date(start_date);
+  const to_date = new Date(end_date);
+
+  try {
+    const transection = await TransectionModel.find().where({
+      transaction_type: transaction_type,
+      registred_date: { $gte: from_date, $lt: to_date },
+    });
+    // .gte(from_date)
+    // .lt(to_date);
+    // transaction_type: transaction_type,
+    // registred_date: { $gte: Date(start_date), $lt: Date(end_date) },
+    //
+    // if (!transection) {
+    //   return res.status(404).json({ message: "No transection found" });
+    // } else {
+    return res.status(200).json(transection);
+    // }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 // delete transection
