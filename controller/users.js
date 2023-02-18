@@ -4,12 +4,7 @@ import jwt from "jsonwebtoken";
 const secret = "test";
 export const signup = async (req, res) => {
   const { name, phone, email, password } = req.body;
-  if (!name || !phone || !email || !password) {
-    return res
-      .status(401)
-      .json({ message: "All Mendatory fields are required" });
-  }
-  //   res.status(200).json({ message: "correct" });
+
   try {
     const checkUser = await UserModel.findOne({ email });
     if (checkUser) {
@@ -21,6 +16,7 @@ export const signup = async (req, res) => {
         phone,
         email,
         password: hashPassword,
+        name,
       });
       const token = jwt.sign(
         {
@@ -28,10 +24,11 @@ export const signup = async (req, res) => {
           id: usersData._id,
         },
         secret,
-        { expiresIn: "4h" }
+        { expiresIn: "1h" }
       );
 
-      res.status(202).json({ usersData, token });
+      // res.status(202).json({ usersData, token });
+      res.status(202).json(name);
     }
   } catch (error) {
     res.status(401).json({ message: error.message });

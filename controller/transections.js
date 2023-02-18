@@ -1,10 +1,11 @@
 import TransectionModel from "../models/Transections.js";
-import moment from "moment";
+// import moment from "moment";
 // get all transections
 export const getTransections = async (req, res) => {
   const transections = await TransectionModel.find().where({
     createdby: req.userId,
   });
+  // .sort({ registred_date: -1 });
   res.status(200).json(transections);
 };
 
@@ -162,16 +163,30 @@ export const updateTransection = async (req, res) => {
 
 export const checkStatement = async (req, res) => {
   const { transaction_type, start_date, end_date } = req.body;
-  // let allTransactions = concat("deposit", "withdraw");
-
-  const from_date = new Date(start_date);
-  const to_date = new Date(end_date);
-
   try {
-    const transection = await TransectionModel.find().where({
-      transaction_type: transaction_type,
-      registred_date: { $gte: from_date, $lt: to_date },
-    });
+    if (transaction_type === "all") {
+      const transection = await TransectionModel.find().where({
+        createdby: req.userId,
+        registred_date: { $gte: start_date, $lte: end_date },
+      });
+      return res.status(200).json(transection);
+    } else if (transaction_type === "deposit") {
+      const transection = await TransectionModel.find().where({
+        transection_type: "deposit",
+        createdby: req.userId,
+        registred_date: { $gte: start_date, $lte: end_date },
+      });
+      return res.status(200).json(transection);
+    } else if (transaction_type === "withdraw") {
+      const transection = await TransectionModel.find().where({
+        transection_type: "withdraw",
+        createdby: req.userId,
+        registred_date: { $gte: start_date, $lte: end_date },
+      });
+      return res.status(200).json(transection);
+    } else {
+      return res.status(404).json({ message: "No Statement Found!" });
+    }
     // .gte(from_date)
     // .lt(to_date);
     // transaction_type: transaction_type,
@@ -180,7 +195,7 @@ export const checkStatement = async (req, res) => {
     // if (!transection) {
     //   return res.status(404).json({ message: "No transection found" });
     // } else {
-    return res.status(200).json(transection);
+    // return res.status(200).json(transection);
     // }
   } catch (error) {
     res.status(500).json({ message: error.message });
