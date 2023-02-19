@@ -2,10 +2,11 @@ import TransectionModel from "../models/Transections.js";
 // import moment from "moment";
 // get all transections
 export const getTransections = async (req, res) => {
-  const transections = await TransectionModel.find().where({
-    createdby: req.userId,
-  });
-  // .sort({ registred_date: -1 });
+  const transections = await TransectionModel.find()
+    .where({
+      createdby: req.userId,
+    })
+    .sort({ registred_date: -1 });
   res.status(200).json(transections);
 };
 
@@ -96,6 +97,9 @@ export const updateTransection = async (req, res) => {
     if (!transection_type && !amount && !registred_date && !description) {
       return res.status(401).json({ message: "All fields are mendatory" });
     } else {
+      const postedTransection = await TransectionModel.findById(id);
+      // trans ka wax laga badalaa in la qabto id gisa kadibne laso aqriyo amount giisa si marki loo update garynayo amount ga dhiman ugu darsan kro
+      let postedTransectionAmount = postedTransection.amount;
       if (transection_type === "deposit") {
         const data = {
           transection_type,
@@ -128,14 +132,15 @@ export const updateTransection = async (req, res) => {
           withdraw_balance += data.amount;
         });
         let total = deposit_balance - withdraw_balance;
+        let final_balance = total + postedTransectionAmount;
         // hadi empty u yahay you don't have a deposit
         if (deposit_data.length === 0) {
           res.status(404).json("You don't have a deposit");
-        } else if (total < amount) {
+        } else if (final_balance < amount) {
           res
             .status(404)
             .json(
-              `You don't have a sufficient amount. Your balance is only $${total}`
+              `You don't have a sufficient amount. Your balance is only $${final_balance}`
             );
         } else {
           const data = {
@@ -160,7 +165,36 @@ export const updateTransection = async (req, res) => {
     res.status(404).json({ message: error.message });
   }
 };
-
+export const getTransactionByDate = async (req, res) => {
+  const { transaction_type, start_date, end_date } = req.body;
+  try {
+    if (transaction_type === "all") {
+      const transection = await TransectionModel.find().where({
+        createdby: req.userId,
+        registred_date: { $gte: start_date, $lte: end_date },
+      });
+      return res.status(200).json(transection);
+    } else if (transaction_type === "deposit") {
+      const transection = await TransectionModel.find().where({
+        transection_type: "deposit",
+        createdby: req.userId,
+        registred_date: { $gte: start_date, $lte: end_date },
+      });
+      return res.status(200).json(transection);
+    } else if (transaction_type === "withdraw") {
+      const transection = await TransectionModel.find().where({
+        transection_type: "withdraw",
+        createdby: req.userId,
+        registred_date: { $gte: start_date, $lte: end_date },
+      });
+      return res.status(200).json(transection);
+    } else {
+      return res.status(404).json({ message: "No Transaciton Found!" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 export const checkStatement = async (req, res) => {
   const { transaction_type, start_date, end_date } = req.body;
   try {
