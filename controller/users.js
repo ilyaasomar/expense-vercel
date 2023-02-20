@@ -61,3 +61,29 @@ export const login = async (req, res) => {
     res.status(500).json({ message: "Something went wrong" });
   }
 };
+export const updateUser = async (req, res) => {
+  const { id } = req.params;
+  const { name, phone, email, password } = req.body;
+  try {
+    // const user = await UserModel.findOne({ id });
+    // if (user) {
+    const data = {
+      name,
+      phone,
+      email,
+      password,
+    };
+    const updatedData = await UserModel.findByIdAndUpdate(
+      id,
+      { $set: data },
+      { new: true }
+    );
+    res.status(200).json(updatedData);
+    // } else {
+    //   return res.status(404).json({ message: "User Not found" });
+    // }
+    // res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
